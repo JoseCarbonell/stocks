@@ -17,6 +17,7 @@ my_cedears = [
                 {'symbol':"WMT", 'exchange': 'NYSE', 'max_qty': 2},
                 {'symbol':"EBAY", 'exchange': 'NASDAQ', 'max_qty': 2},
                 {'symbol':"KO", 'exchange': 'NYSE', 'max_qty': 2},
+                {'symbol':"GOOGL", 'exchange': 'NASDAQ', 'max_qty': 2},
                 {'symbol':"BABA", 'exchange': 'NYSE', 'max_qty': 2},
                 {'symbol':"CAT", 'exchange': 'NYSE', 'max_qty': 2},
                 {'symbol':"TSLA", 'exchange': 'NASDAQ', 'max_qty': 2},
@@ -24,6 +25,9 @@ my_cedears = [
                 {'symbol':"AAPL", 'exchange': 'NASDAQ', 'max_qty': 2},
                 {'symbol':"JPM", 'exchange': 'NYSE', 'max_qty': 2},
                 {'symbol':"META", 'exchange': 'NASDAQ', 'max_qty': 2},
+                {'symbol':"NVDA", 'exchange': 'NASDAQ', 'max_qty': 2},
+                {'symbol':"GLOB", 'exchange': 'NYSE', 'max_qty': 2},
+                {'symbol':"CSCO", 'exchange': 'NASDAQ', 'max_qty': 2},
             ]
 my_acciones = ["CEPU","CRES","PAMP","TGSU2"]
 
@@ -31,8 +35,8 @@ my_acciones = ["CEPU","CRES","PAMP","TGSU2"]
 
 def get_access_token():
     api_call = requests.post('https://api.invertironline.com/token', data= {
-        'username': '',
-        'password': '',
+        'username': 'micaela.garibotti@gmail.com',
+        'password': 'Invertir.456',
         'grant_type': 'password'
     }).text
 
@@ -90,7 +94,7 @@ def buy_stock(access_token: str, symbol: str, qty: int, price: int, portfolio: l
 
 
     for pend_op in pending_operations:
-        if pend_op['simbolo'] == symbol:
+        if pend_op['simbolo'] == symbol and pend_op['tipo'] == "Compra":
             print("Deleting operation " + str(pend_op['numero']) + "for symbol " + symbol)
             delete_operation(access_token, pend_op['numero'])
 
@@ -114,6 +118,7 @@ def buy_stock(access_token: str, symbol: str, qty: int, price: int, portfolio: l
 
     print(f"Qty from portfolio (BUY) {symbol_qty_from_portfolio}")
 
+    # ALLOW TO BUY 3 STOCKS
     try:
         if symbol_qty_from_portfolio < max_qty:
             api_call = requests.post('https://api.invertironline.com/api/v2/operar/Comprar', 
@@ -132,7 +137,7 @@ def sell_stock(access_token: str, symbol: str, price: int, portfolio: list):
     pending_operations = get_current_pending_operations(access_token)
 
     for pend_op in pending_operations:
-        if pend_op['simbolo'] == symbol:
+        if pend_op['simbolo'] == symbol and pend_op['tipo'] == "Venta":
             print("Deleting operation " + str(pend_op['numero']) + "for symbol " + symbol)
             delete_operation(access_token, pend_op['numero'])
 
@@ -144,7 +149,7 @@ def sell_stock(access_token: str, symbol: str, price: int, portfolio: list):
         if prt['titulo']['simbolo'] == symbol:
             symbol_qty_from_portfolio = prt['cantidad']
 
-    print(f"Qty from portfolio (SELL) {symbol_qty_from_portfolio}")
+    print(f"Selling {symbol_qty_from_portfolio}x of {symbol}")
 
     data= {
         'mercado': 'bCBA',
@@ -168,51 +173,6 @@ def sell_stock(access_token: str, symbol: str, price: int, portfolio: list):
     except Exception as e:
         print(f"Error selling stock: {e}")
 
-def save_symbol_in_db(symbol: str, qty: int):
-    symbol_qty_in_db = get_symbol_qty_in_db(symbol)
-    try:
-        response = table.put_item(Item={
-            'stock': symbol,
-            'qty': symbol_qty_in_db + qty
-        })
-        print("Put Item Successful:", response)
-    except Exception as e:
-        print(f"Error putting item: {e}")
-def update_stock_qty_from_db(symbol: str, qty: int):
-    try:
-        response = table.put_item(Item={
-            'stock': symbol,
-            'qty': qty
-        })
-        print("Removing Stock Qty Successful:", response)
-    except Exception as e:
-        print(f"Error putting item: {e}")
-
-def get_symbol_qty_in_db(symbol: str):
-    try:
-        response = table.get_item(
-            Key={
-                'stock': symbol
-            }
-        )
-        item = response.get('Item')
-        if item:
-            return item['qty']
-        else:
-            return 0
-    except Exception as e:
-        print(f"Error getting item: {e}")
-
-def delete_symbol_in_db(symbol: str):
-    try:
-        response = table.delete_item(
-            Key={
-                'stock': symbol
-            }
-        )
-        print("Delete Item Successful:", response)
-    except Exception as e:
-        print(f"Error deleting item: {e}")
 
 def send_email(sender_email, recipient_email, subject, body):
     # Set up the SES client
@@ -255,16 +215,32 @@ def lambda_handler(event, context):
                         symbol=s['symbol'],
                         screener="america",
                         exchange=s['exchange'],
-                        interval=Interval.INTERVAL_15_MINUTES)
-                buy_price = ced['puntas']['precioCompra']
-                sell_price = ced['puntas']['precioVenta']
+                        interval=Interval.INTERVAL_5_MINUTES)
                 
                 print(f"Company {ced['simbolo']}, Recomendation {output.get_analysis().summary['RECOMMENDATION']}")
 
+                buy_price = ced['puntas']['precioCompra']
+                sell_price = ced['puntas']['precioVenta']
+
                 if output.get_analysis().summary['RECOMMENDATION'] == "BUY" or output.get_analysis().summary['RECOMMENDATION'] == "STRONG_BUY":
-                    buy_stock(access_token, ced['simbolo'], 1, buy_price, portfolio, s['max_qty'])
-                elif output.get_analysis().summary['RECOMMENDATION'] == "SELL" or output.get_analysis().summary['RECOMMENDATION'] == "STRONG_SELL":
-                    sell_stock(access_token, ced['simbolo'], sell_price, portfolio)
+                    print(f"BUY {ced['descripcion']}")
+                    buy_stock(access_token, ced['simbolo'], s['max_qty'], buy_price, portfolio, s['max_qty'])
+
+
+                # SELL STOCK IF MARKET VALUE IS UPPER THAN 1.6% OF PURCHASED PRICE
+                for p in portfolio:
+                    stock_selled = False
+                    if p['titulo']['simbolo'] == s['symbol']:
+                        if p['gananciaPorcentaje'] > 1.5:
+                            print(f"{ced['descripcion']} selling in {sell_price}")
+                            sell_stock(access_token, ced['simbolo'], sell_price, portfolio)
+                            stock_selled = True
+                    
+                        print(f"Stock selled by percentage logic {stock_selled}")
+
+                        if stock_selled == False:
+                            if output.get_analysis().summary['RECOMMENDATION'] == "SELL" or output.get_analysis().summary['RECOMMENDATION'] == "STRONG_SELL":
+                                sell_stock(access_token, ced['simbolo'], sell_price, portfolio)
 
     email_body = f"""
     <html>
