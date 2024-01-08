@@ -1,31 +1,39 @@
 import requests
 import json
 from tradingview_ta import TA_Handler, Interval
-from datetime import datetime, timedelta
+from datetime import datetime
+
 
 my_cedears = [
-                {'symbol':"AMZN", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Consumer'}, 
-                {'symbol':"NKE", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Consumer'}, 
-                {'symbol':"WMT", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Consumer'}, 
-                {'symbol':"EBAY", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Consumer'}, 
-                {'symbol':"KO", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Consumer'}, 
-                {'symbol':"GOOGL", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Technology'}, 
-                {'symbol':"BABA", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Consumer'}, 
-                {'symbol':"CAT", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Technology'},
-                {'symbol':"TSLA", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Consumer'}, 
-                {'symbol':"MSFT", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Technology'}, 
-                {'symbol':"AAPL", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Technology'}, 
-                {'symbol':"JPM", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Finance'},
-                {'symbol':"META", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Technology'}, 
-                {'symbol':"NVDA", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Technology'}, 
-                {'symbol':"GLOB", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Technology'}, 
-                {'symbol':"CSCO", 'exchange': 'NASDAQ', 'max_qty': 2, 'sector': 'Telecommunications'}, 
-                {'symbol':"XOM", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Energy'},
-                {'symbol':"PBR", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Consumer'},
-                {'symbol':"PG", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Consumer'},
-                {'symbol':"T", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Technology'},
-                {'symbol':"VIST", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Energy'},
-                {'symbol':"MELI", 'exchange': 'NYSE', 'max_qty': 2, 'sector': 'Technology'}, 
+                {'symbol':"AMZN", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Consumer'}, 
+                {'symbol':"NKE", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Consumer'}, 
+                {'symbol':"WMT", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Consumer'}, 
+                {'symbol':"EBAY", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Consumer'}, 
+                {'symbol':"KO", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Consumer'}, 
+                {'symbol':"GOOGL", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"BABA", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Consumer'}, 
+                {'symbol':"CAT", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Technology'},
+                {'symbol':"TSLA", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Consumer'}, 
+                {'symbol':"MSFT", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"AAPL", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"JPM", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Finance'},
+                {'symbol':"META", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"NVDA", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"GLOB", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"CSCO", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Telecommunications'}, 
+                {'symbol':"XOM", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Energy'},
+                {'symbol':"PBR", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Consumer'},
+                {'symbol':"PG", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Consumer'},
+                {'symbol':"T", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Technology'},
+                {'symbol':"C", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Finance'},
+                {'symbol':"VIST", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Energy'},
+                {'symbol':"MELI", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"QCOM", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"NFLX", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Technology'}, 
+                {'symbol':"PEP", 'exchange': 'NASDAQ', 'max_qty': 7, 'sector': 'Consumer'}, 
+                {'symbol':"MCD", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Consumer'},
+                {'symbol':"JNJ", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Health'},
+                {'symbol':"CVX", 'exchange': 'NYSE', 'max_qty': 7, 'sector': 'Energy'},
             ]
 my_acciones = ["CEPU","CRES","PAMP","TGSU2"]
 
@@ -179,6 +187,7 @@ def lambda_handler(event, context):
     access_token = get_access_token()
     cedears_from_iol = get_market_cedears_quotations(access_token)
     portfolio = get_portfolio(access_token)
+    pending_operations = get_current_pending_operations(access_token)
 
     for s in my_cedears:
         for ced in cedears_from_iol:
@@ -187,7 +196,7 @@ def lambda_handler(event, context):
                         symbol=s['symbol'],
                         screener="america",
                         exchange=s['exchange'],
-                        interval=Interval.INTERVAL_15_MINUTES)
+                        interval=Interval.INTERVAL_4_HOURS)
                 
                 print(f"Company {ced['simbolo']}, Recomendation {output.get_analysis().summary['RECOMMENDATION']}")
 
@@ -205,29 +214,38 @@ def lambda_handler(event, context):
                 for p in portfolio:
                     stock_selled = False
                     if p['titulo']['simbolo'] == s['symbol']:
-                        buy_price_with_taxes = round((p['ppc'] * 1.007018) * 1.01, 0)
-                        sell_price_with_taxes = sell_price / 1.000968
-                        print(f"Ganancia {p['gananciaPorcentaje']}")
-                        print(f"Buy price with taxes plus 1% = {buy_price_with_taxes})")
-                        print(f"Sell price with taxes = {round(sell_price_with_taxes, 0)}")
+                        # buy_price_with_taxes = round((p['ppc'] * 1.007018) * 1.01, 0)
+                        # sell_price_with_taxes = sell_price / 1.000968
+                        # print(f"Ganancia {p['gananciaPorcentaje']}")
+                        # print(f"Buy price with taxes plus 1% = {buy_price_with_taxes})")
+                        # print(f"Sell price with taxes = {round(sell_price_with_taxes, 0)}")
 
-                        if sell_price_with_taxes > buy_price_with_taxes:
-                            print(f"{ced['descripcion']} selling in {sell_price_with_taxes}")
-                            sell_stock(access_token, ced['simbolo'], round(sell_price_with_taxes, 0), portfolio)
+                        # if sell_price_with_taxes > buy_price_with_taxes:
+                        if p['gananciaPorcentaje'] > 4:
+                            print(f"{ced['descripcion']} selling in {sell_price}")
+                            sell_stock(access_token, ced['simbolo'], sell_price, portfolio)
                             stock_selled = True
 
                         # STOP LOSS
                         if p['gananciaPorcentaje'] < -4:
                             print(f"STOP LOSS {s['symbol']}")
-                            sell_stock(access_token, ced['simbolo'], round(sell_price_with_taxes, 0), portfolio)
+                            sell_stock(access_token, ced['simbolo'], sell_price, portfolio)
                         # print(f"Stock selled by percentage logic {stock_selled}")
 
                         # if stock_selled == False:
                         #     if recommendation == "SELL" or recommendation == "STRONG_SELL":
                         #         sell_stock(access_token, ced['simbolo'], sell_price, portfolio)
-                        if stock_selled == False:
-                            if recommendation == "STRONG_SELL":
-                                sell_stock(access_token, ced['simbolo'], sell_price, portfolio)
+                        
+                        # if stock_selled == False:
+                        #     if recommendation == "STRONG_SELL":
+                        #         sell_stock(access_token, ced['simbolo'], sell_price, portfolio)
+
+                # # VALIDATE IF CURRENT PURCHASE PRICE IS HIGHER THAN MY MADE PURCHASE FOR SPECIFIC STOCK
+                # for pend in pending_operations:
+                #     if pend['simbolo'] == s['symbol'] and pend['tipo'] == "Compra":
+                #         if pend['precio'] > buy_price:
+                #             print(f"CURRENT SELL PRICE IS HIGHER THAN MY SELL FOR SPECIFIC STOCK")
+                #             buy_stock(access_token, ced['simbolo'], (s['max_qty']), buy_price, portfolio)
     
     return { 
         'message' : 'OK'
